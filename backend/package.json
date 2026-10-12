@@ -1,0 +1,14 @@
+{
+  "name": "jay-devworks-inquiry-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test security.test.js app.test.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "helmet": "^8.0.0"
+  }
+}
