@@ -1139,6 +1139,8 @@
         height: 520px;
         margin: 0 auto;
         touch-action: pan-y;
+        user-select: none;
+        -webkit-user-select: none;
       }
 
       .stack-card {
@@ -1154,6 +1156,8 @@
         cursor: grab;
         transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.35s ease;
         user-select: none;
+        -webkit-user-select: none;
+        touch-action: pan-y;
       }
 
       .stack-card:active {
@@ -1165,6 +1169,9 @@
         height: 72%;
         overflow: hidden;
         position: relative;
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: pan-y;
       }
 
       .stack-card img {
@@ -1172,6 +1179,10 @@
         height: 100%;
         object-fit: cover;
         transition: transform 8s ease-out;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-user-drag: none;
+        pointer-events: none;
       }
 
       .stack-card:hover img {
@@ -1185,6 +1196,7 @@
         display: flex;
         flex-direction: column;
         justify-content: center;
+        user-select: none;
       }
 
       .stack-card-meta h3 {
@@ -1222,12 +1234,12 @@
         background: transparent;
         border: none;
         padding: 0;
-        max-width: 90vw;
-        max-height: 90vh;
+        max-width: 92vw;
+        max-height: 92vh;
         margin: auto;
-        border-radius: 12px;
+        border-radius: 14px;
         overflow: hidden;
-        box-shadow: 0 0 60px rgba(0, 0, 0, 0.9), 0 0 30px var(--blue);
+        box-shadow: 0 0 60px rgba(0, 0, 0, 0.95), 0 0 30px var(--blue);
       }
       dialog#lightbox-dialog::backdrop {
         background: rgba(3, 6, 14, 0.88);
@@ -1236,22 +1248,99 @@
       .lightbox-content {
         position: relative;
         background: #060b18;
+        display: flex;
+        flex-direction: column;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+      .lightbox-img-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        max-height: 80vh;
+        overflow: hidden;
+        touch-action: pan-y;
+        cursor: grab;
+      }
+      .lightbox-img-wrap:active {
+        cursor: grabbing;
       }
       .lightbox-content img {
         max-width: 100%;
-        max-height: 85vh;
+        max-height: 78vh;
         display: block;
+        object-fit: contain;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-user-drag: none;
+        pointer-events: none;
+        transition: transform 0.25s ease, opacity 0.25s ease;
       }
       .lightbox-close-btn {
         position: absolute;
-        top: 1rem;
-        right: 1rem;
-        background: rgba(0, 0, 0, 0.7);
+        top: 0.75rem;
+        right: 0.75rem;
+        background: rgba(4, 9, 24, 0.85);
         border: 1px solid var(--blue);
         color: #fff;
-        padding: 0.4rem 0.8rem;
+        padding: 0.35rem 0.75rem;
         border-radius: 6px;
         cursor: pointer;
+        z-index: 20;
+        font-size: 0.85rem;
+        transition: all 0.2s ease;
+      }
+      .lightbox-close-btn:hover {
+        background: var(--blue);
+        color: #040918;
+      }
+      .lightbox-nav-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(4, 9, 24, 0.8);
+        border: 1px solid var(--blue);
+        color: #fff;
+        font-size: 2rem;
+        line-height: 1;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 15;
+        transition: all 0.2s ease;
+      }
+      .lightbox-nav-btn:hover {
+        background: var(--blue);
+        color: #040918;
+      }
+      .lightbox-prev-btn {
+        left: 0.75rem;
+      }
+      .lightbox-next-btn {
+        right: 0.75rem;
+      }
+      .lightbox-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 1.25rem;
+        background: #09122a;
+        border-top: 1px solid var(--panel-border);
+      }
+      .lightbox-title {
+        color: #fff;
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+      .lightbox-counter {
+        font-family: var(--font-code);
+        color: var(--blue-light);
+        font-size: 0.85rem;
       }
 
       /* Inquiry Section */
@@ -2106,6 +2195,7 @@
                     src="/assets/img/harbor-pine-forest.jpg"
                     alt="Harbor & Pine Café website with the headline Where the Forest Meets the Harbor over a café interior looking out through large windows to a harbor and pine trees, with a menu list, opening hours and a catering inquiry form."
                     loading="lazy"
+                    draggable="false"
                   />
                 </div>
                 <div class="stack-card-meta">
@@ -2126,6 +2216,7 @@
                     src="/assets/img/ledgerleaf-overview.jpg"
                     alt="LedgerLeaf invoicing overview with total revenue, paid and overdue cards, a monthly summary bar chart of paid and pending amounts, and a table of overdue invoices with client, amount, due date and status."
                     loading="lazy"
+                    draggable="false"
                   />
                 </div>
                 <div class="stack-card-meta">
@@ -2146,6 +2237,7 @@
                     src="/assets/img/northwind-outfitters.jpg"
                     alt="Northwind Outfitters online store on a desktop and a phone, showing a hero banner of a hiker, filters, a grid of tents, backpacks, boots and a sleeping bag with prices, and a checkout panel with shipping and payment steps."
                     loading="lazy"
+                    draggable="false"
                   />
                 </div>
                 <div class="stack-card-meta">
@@ -2166,6 +2258,7 @@
                     src="/assets/img/brightside-dental-site.jpg"
                     alt="Brightside Dental website in a browser window, with the headline Healthy smiles start here. and the line Gentle dental care for the whole family. beside a photo of a family with their dentist, above four service cards: Family Dentistry, Preventive Care, Pediatric Dentistry and Cosmetic Dentistry, and an appointment request form."
                     loading="lazy"
+                    draggable="false"
                   />
                 </div>
                 <div class="stack-card-meta">
@@ -2186,6 +2279,7 @@
                     src="/assets/img/tasktide-board.jpg"
                     alt="TaskTide website in a browser window with the headline Keep every task moving. over a soft ocean-wave background, above a task board with Backlog, In Progress, Review and Done columns holding cards such as Write launch email, Fix login bug, Review copy and Plan launch."
                     loading="lazy"
+                    draggable="false"
                   />
                 </div>
                 <div class="stack-card-meta">
@@ -2206,6 +2300,7 @@
                     src="/assets/img/kiln-and-clay-store.jpg"
                     alt="Kiln & Clay online store in a browser window, with the headline Made slowly. Kept forever. and a Shop the drop button beside a photo of a speckled vase on a stone block, above three products: a Sculpted Ridge Vase for $128, Ivory Dinner Plates for $98 and Cobalt Espresso Cups for $64."
                     loading="lazy"
+                    draggable="false"
                   />
                 </div>
                 <div class="stack-card-meta">
@@ -2233,9 +2328,17 @@
 
       <!-- Lightbox Dialog -->
       <dialog id="lightbox-dialog">
-        <div class="lightbox-content">
-          <button class="lightbox-close-btn" id="lightbox-close-btn">Close [Esc]</button>
-          <img id="lightbox-img" src="" alt="Project screenshot preview" />
+        <div class="lightbox-content" id="lightbox-content">
+          <button class="lightbox-close-btn" id="lightbox-close-btn" aria-label="Close dialog">Close [Esc]</button>
+          <button class="lightbox-nav-btn lightbox-prev-btn" id="lightbox-prev-btn" aria-label="Previous project">‹</button>
+          <div class="lightbox-img-wrap" id="lightbox-img-wrap">
+            <img id="lightbox-img" src="" alt="Project screenshot preview" draggable="false" />
+          </div>
+          <button class="lightbox-nav-btn lightbox-next-btn" id="lightbox-next-btn" aria-label="Next project">›</button>
+          <div class="lightbox-footer">
+            <span class="lightbox-title" id="lightbox-title"></span>
+            <span class="lightbox-counter" id="lightbox-counter"></span>
+          </div>
         </div>
       </dialog>
 
@@ -4173,7 +4276,10 @@
           if (currentIndex >= visible.length) currentIndex = 0;
           if (currentIndex < 0) currentIndex = visible.length - 1;
 
-          cards.forEach(function(c) { c.style.display = 'none'; });
+          cards.forEach(function(c) {
+            c.style.display = 'none';
+            c.style.transition = 'transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.35s ease';
+          });
 
           visible.forEach(function(card, idx) {
             card.style.display = 'block';
@@ -4207,112 +4313,426 @@
           }
         }
 
-        function nextCard() {
+        function nextCard(direction) {
           var visible = getVisibleCards();
           if (visible.length <= 1) return;
           var top = visible[currentIndex];
+          var dir = (direction === 'left' || direction === undefined) ? -1 : 1;
           if (top) {
-            top.style.transform = 'translate3d(240px, -40px, 0) rotate(15deg)';
+            top.style.transition = 'transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.28s ease';
+            var exitX = dir < 0 ? -420 : 420;
+            var exitRot = dir < 0 ? -18 : 18;
+            top.style.transform = 'translate3d(' + exitX + 'px, -20px, 0) rotate(' + exitRot + 'deg)';
             top.style.opacity = '0';
           }
-          SoundKit.flip();
+          if (window.SoundKit && SoundKit.flip) SoundKit.flip();
           setTimeout(function() {
             currentIndex = (currentIndex + 1) % visible.length;
             updateStack();
           }, 240);
         }
 
-        function prevCard() {
+        function prevCard(direction) {
           var visible = getVisibleCards();
           if (visible.length <= 1) return;
-          SoundKit.flip();
-          currentIndex = (currentIndex - 1 + visible.length) % visible.length;
-          updateStack();
+          var top = visible[currentIndex];
+          var dir = (direction === 'right' || direction === undefined) ? 1 : -1;
+          if (top) {
+            top.style.transition = 'transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.28s ease';
+            var exitX = dir > 0 ? 420 : -420;
+            var exitRot = dir > 0 ? 18 : -18;
+            top.style.transform = 'translate3d(' + exitX + 'px, -20px, 0) rotate(' + exitRot + 'deg)';
+            top.style.opacity = '0';
+          }
+          if (window.SoundKit && SoundKit.flip) SoundKit.flip();
+          setTimeout(function() {
+            currentIndex = (currentIndex - 1 + visible.length) % visible.length;
+            updateStack();
+          }, 240);
         }
 
-        if (nextBtn) nextBtn.addEventListener('click', nextCard);
-        if (prevBtn) prevBtn.addEventListener('click', prevCard);
+        if (nextBtn) nextBtn.addEventListener('click', function() { nextCard('left'); resetTimer(); });
+        if (prevBtn) prevBtn.addEventListener('click', function() { prevCard('right'); resetTimer(); });
 
         function resetTimer() {
           clearInterval(autoAdvanceTimer);
-          if (!PREFERS_REDUCED_MOTION) {
+          if (typeof PREFERS_REDUCED_MOTION === 'undefined' || !PREFERS_REDUCED_MOTION) {
             autoAdvanceTimer = setInterval(function() {
-              if (!isPaused && document.visibilityState === 'visible') {
-                nextCard();
+              if (!isPaused && document.visibilityState === 'visible' && !lightboxOpen) {
+                nextCard('left');
               }
-            }, 3000);
+            }, 3800);
           }
         }
         resetTimer();
 
         container.addEventListener('mouseenter', function() { isPaused = true; });
-        container.addEventListener('mouseleave', function() { isPaused = false; });
+        container.addEventListener('mouseleave', function() { if (!isDragging) isPaused = false; });
 
-        var startX = 0, currentX = 0, isDragging = false;
-        container.addEventListener('pointerdown', function(e) {
+        // Swipe & Drag Gesture Handler
+        var startX = 0, startY = 0, currentX = 0, currentY = 0;
+        var startTime = 0;
+        var isDragging = false;
+        var isHorizontalSwipe = false;
+        var activePointerId = null;
+        var topCard = null;
+        var nextUnderCard = null;
+        var hasMovedSignificantly = false;
+
+        // Prevent native browser image drag
+        container.addEventListener('dragstart', function(e) {
+          e.preventDefault();
+        });
+
+        function handleDragStart(clientX, clientY, pointerId) {
+          var visible = getVisibleCards();
+          if (visible.length === 0) return;
+          topCard = visible[currentIndex];
+          nextUnderCard = visible.length > 1 ? visible[(currentIndex + 1) % visible.length] : null;
+          if (!topCard) return;
+
           isDragging = true;
+          isHorizontalSwipe = false;
+          hasMovedSignificantly = false;
+          activePointerId = pointerId !== undefined ? pointerId : null;
+          startX = clientX;
+          startY = clientY;
+          currentX = clientX;
+          currentY = clientY;
+          startTime = Date.now();
           isPaused = true;
-          startX = e.clientX;
-          currentX = e.clientX;
+
+          topCard.style.transition = 'none';
+          if (nextUnderCard) nextUnderCard.style.transition = 'none';
+
+          if (pointerId !== undefined && container.setPointerCapture) {
+            try { container.setPointerCapture(pointerId); } catch (err) {}
+          }
+        }
+
+        function handleDragMove(clientX, clientY, e) {
+          if (!isDragging || !topCard) return;
+          currentX = clientX;
+          currentY = clientY;
+          var deltaX = currentX - startX;
+          var deltaY = currentY - startY;
+
+          if (!isHorizontalSwipe) {
+            if (Math.abs(deltaX) > 7 && Math.abs(deltaX) > Math.abs(deltaY)) {
+              isHorizontalSwipe = true;
+              hasMovedSignificantly = true;
+            } else if (Math.abs(deltaY) > 12 && Math.abs(deltaY) > Math.abs(deltaX)) {
+              // User is scrolling page vertically - release card
+              isDragging = false;
+              topCard.style.transition = 'transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.35s ease';
+              topCard.style.transform = 'translate3d(0, 0, 0) scale(1) rotate(0deg)';
+              topCard.style.opacity = '1';
+              if (nextUnderCard) {
+                nextUnderCard.style.transition = 'transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.35s ease';
+                nextUnderCard.style.transform = 'translate3d(14px, 14px, -30px) scale(0.96) rotate(1.5deg)';
+                nextUnderCard.style.opacity = '0.75';
+              }
+              if (activePointerId !== null && container.releasePointerCapture) {
+                try { container.releasePointerCapture(activePointerId); } catch (err) {}
+              }
+              isPaused = false;
+              return;
+            }
+          }
+
+          if (isHorizontalSwipe) {
+            if (e && e.cancelable) e.preventDefault();
+            hasMovedSignificantly = true;
+            var rot = Math.max(-18, Math.min(18, deltaX * 0.04));
+            topCard.style.transform = 'translate3d(' + deltaX + 'px, ' + (deltaX * 0.04) + 'px, 0) rotate(' + rot + 'deg)';
+            var opacity = Math.max(0.4, 1 - Math.abs(deltaX) / 600);
+            topCard.style.opacity = opacity.toString();
+
+            if (nextUnderCard) {
+              var progress = Math.min(1, Math.abs(deltaX) / 200);
+              var peekX = 14 * (1 - progress);
+              var peekY = 14 * (1 - progress);
+              var peekZ = -30 * (1 - progress);
+              var peekScale = 0.96 + (0.04 * progress);
+              var peekRot = 1.5 * (1 - progress);
+              var peekOp = 0.75 + (0.25 * progress);
+              nextUnderCard.style.transform = 'translate3d(' + peekX + 'px, ' + peekY + 'px, ' + peekZ + 'px) scale(' + peekScale + ') rotate(' + peekRot + 'deg)';
+              nextUnderCard.style.opacity = peekOp.toString();
+            }
+          }
+        }
+
+        function handleDragEnd() {
+          if (!isDragging) return;
+          isDragging = false;
+          isPaused = false;
+          resetTimer();
+
+          if (activePointerId !== null && container.releasePointerCapture) {
+            try { container.releasePointerCapture(activePointerId); } catch (err) {}
+          }
+          activePointerId = null;
+
+          if (!topCard) {
+            updateStack();
+            return;
+          }
+
+          topCard.style.transition = 'transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.32s ease';
+          if (nextUnderCard) {
+            nextUnderCard.style.transition = 'transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.32s ease';
+          }
+
+          var deltaX = currentX - startX;
+          var deltaTime = Math.max(1, Date.now() - startTime);
+          var velocity = Math.abs(deltaX) / deltaTime; // px/ms
+
+          // Swipe threshold: 55px distance or 25px fast flick
+          var isSwipe = (Math.abs(deltaX) > 55) || (Math.abs(deltaX) > 25 && velocity > 0.35);
+
+          if (isSwipe && isHorizontalSwipe) {
+            if (deltaX < 0) {
+              // Swipe LEFT -> NEXT card
+              nextCard('left');
+            } else {
+              // Swipe RIGHT -> PREV card
+              prevCard('right');
+            }
+          } else {
+            // Snap back
+            topCard.style.transform = 'translate3d(0, 0, 0) scale(1) rotate(0deg)';
+            topCard.style.opacity = '1';
+            if (nextUnderCard) {
+              nextUnderCard.style.transform = 'translate3d(14px, 14px, -30px) scale(0.96) rotate(1.5deg)';
+              nextUnderCard.style.opacity = '0.75';
+            }
+          }
+        }
+
+        // Pointer Events
+        container.addEventListener('pointerdown', function(e) {
+          if (e.pointerType === 'mouse' && e.button !== 0) return;
+          handleDragStart(e.clientX, e.clientY, e.pointerId);
         });
 
         window.addEventListener('pointermove', function(e) {
           if (!isDragging) return;
-          currentX = e.clientX;
-          var delta = currentX - startX;
-          var visible = getVisibleCards();
-          var top = visible[currentIndex];
-          if (top) {
-            top.style.transform = 'translate3d(' + delta + 'px, 0, 0) rotate(' + (delta * 0.05) + 'deg)';
-          }
+          handleDragMove(e.clientX, e.clientY, e);
         });
 
-        window.addEventListener('pointerup', function() {
+        window.addEventListener('pointerup', function(e) {
           if (!isDragging) return;
-          isDragging = false;
-          isPaused = false;
-          var delta = currentX - startX;
-          if (delta > 75) nextCard();
-          else if (delta < -75) prevCard();
-          else updateStack();
+          handleDragEnd();
         });
 
+        window.addEventListener('pointercancel', function(e) {
+          if (!isDragging) return;
+          handleDragEnd();
+        });
+
+        // Touch event fallbacks for complete mobile cross-compatibility
+        container.addEventListener('touchstart', function(e) {
+          if (e.touches.length === 1) {
+            var t = e.touches[0];
+            handleDragStart(t.clientX, t.clientY);
+          }
+        }, { passive: true });
+
+        container.addEventListener('touchmove', function(e) {
+          if (e.touches.length === 1 && isDragging) {
+            var t = e.touches[0];
+            handleDragMove(t.clientX, t.clientY, e);
+          }
+        }, { passive: false });
+
+        container.addEventListener('touchend', function() {
+          handleDragEnd();
+        }, { passive: true });
+
+        container.addEventListener('touchcancel', function() {
+          handleDragEnd();
+        }, { passive: true });
+
+        // Category Filter Buttons
         filterBtns.forEach(function(btn) {
           btn.addEventListener('click', function() {
             filterBtns.forEach(function(b) { b.classList.remove('active'); });
             btn.classList.add('active');
             currentFilter = btn.getAttribute('data-filter');
             currentIndex = 0;
-            SoundKit.click();
+            if (window.SoundKit && SoundKit.click) SoundKit.click();
             updateStack();
+            resetTimer();
           });
         });
 
-        // Lightbox
+        // Lightbox Controller
         var lightbox = document.getElementById('lightbox-dialog');
         var lightboxImg = document.getElementById('lightbox-img');
         var lightboxClose = document.getElementById('lightbox-close-btn');
+        var lightboxPrev = document.getElementById('lightbox-prev-btn');
+        var lightboxNext = document.getElementById('lightbox-next-btn');
+        var lightboxTitle = document.getElementById('lightbox-title');
+        var lightboxCounter = document.getElementById('lightbox-counter');
+        var lightboxImgWrap = document.getElementById('lightbox-img-wrap');
+        var lightboxCurrentIndex = 0;
+        var lightboxOpen = false;
 
-        cards.forEach(function(c) {
-          c.addEventListener('click', function() {
-            if (Math.abs(currentX - startX) > 10) return;
-            var img = c.querySelector('img');
-            if (img && lightbox && lightboxImg) {
+        function renderLightbox(idx) {
+          var visible = getVisibleCards();
+          if (visible.length === 0) return;
+          if (idx < 0) idx = visible.length - 1;
+          if (idx >= visible.length) idx = 0;
+          lightboxCurrentIndex = idx;
+          var card = visible[lightboxCurrentIndex];
+          if (!card) return;
+          var img = card.querySelector('img');
+          var titleEl = card.querySelector('.stack-card-meta h3');
+
+          if (lightboxImg && img) {
+            lightboxImg.style.opacity = '0.3';
+            lightboxImg.style.transform = 'scale(0.97)';
+            setTimeout(function() {
               lightboxImg.src = img.src;
               lightboxImg.alt = img.alt;
-              lightbox.showModal();
-              isPaused = true;
-              SoundKit.pop();
+              lightboxImg.style.opacity = '1';
+              lightboxImg.style.transform = 'scale(1)';
+            }, 120);
+          }
+          if (lightboxTitle && titleEl) {
+            lightboxTitle.textContent = titleEl.textContent;
+          }
+          if (lightboxCounter) {
+            lightboxCounter.textContent = (lightboxCurrentIndex + 1) + ' / ' + visible.length;
+          }
+        }
+
+        function openLightbox(idx) {
+          if (!lightbox) return;
+          lightboxOpen = true;
+          isPaused = true;
+          renderLightbox(idx);
+          try {
+            lightbox.showModal();
+          } catch (err) {
+            lightbox.setAttribute('open', '');
+          }
+          if (window.SoundKit && SoundKit.pop) SoundKit.pop();
+        }
+
+        function closeLightbox() {
+          if (!lightbox) return;
+          lightboxOpen = false;
+          isPaused = false;
+          try {
+            lightbox.close();
+          } catch (err) {
+            lightbox.removeAttribute('open');
+          }
+          resetTimer();
+        }
+
+        if (lightboxClose) lightboxClose.addEventListener('click', closeLightbox);
+        if (lightboxPrev) lightboxPrev.addEventListener('click', function(e) {
+          e.stopPropagation();
+          renderLightbox(lightboxCurrentIndex - 1);
+          if (window.SoundKit && SoundKit.flip) SoundKit.flip();
+        });
+        if (lightboxNext) lightboxNext.addEventListener('click', function(e) {
+          e.stopPropagation();
+          renderLightbox(lightboxCurrentIndex + 1);
+          if (window.SoundKit && SoundKit.flip) SoundKit.flip();
+        });
+
+        // Swipe inside Lightbox Modal
+        var lbStartX = 0, lbCurrentX = 0, lbIsDragging = false;
+        if (lightboxImgWrap) {
+          lightboxImgWrap.addEventListener('pointerdown', function(e) {
+            lbIsDragging = true;
+            lbStartX = e.clientX;
+            lbCurrentX = e.clientX;
+          });
+          window.addEventListener('pointermove', function(e) {
+            if (!lbIsDragging || !lightboxOpen) return;
+            lbCurrentX = e.clientX;
+            var d = lbCurrentX - lbStartX;
+            if (lightboxImg) {
+              lightboxImg.style.transform = 'translate3d(' + (d * 0.6) + 'px, 0, 0)';
             }
+          });
+          window.addEventListener('pointerup', function() {
+            if (!lbIsDragging || !lightboxOpen) return;
+            lbIsDragging = false;
+            var d = lbCurrentX - lbStartX;
+            if (lightboxImg) lightboxImg.style.transform = 'translate3d(0, 0, 0)';
+            if (d < -50) {
+              renderLightbox(lightboxCurrentIndex + 1);
+              if (window.SoundKit && SoundKit.flip) SoundKit.flip();
+            } else if (d > 50) {
+              renderLightbox(lightboxCurrentIndex - 1);
+              if (window.SoundKit && SoundKit.flip) SoundKit.flip();
+            }
+          });
+
+          // Touch inside lightbox
+          lightboxImgWrap.addEventListener('touchstart', function(e) {
+            if (e.touches.length === 1) {
+              lbIsDragging = true;
+              lbStartX = e.touches[0].clientX;
+              lbCurrentX = e.touches[0].clientX;
+            }
+          }, { passive: true });
+          lightboxImgWrap.addEventListener('touchmove', function(e) {
+            if (lbIsDragging && e.touches.length === 1) {
+              lbCurrentX = e.touches[0].clientX;
+              var d = lbCurrentX - lbStartX;
+              if (Math.abs(d) > 8 && e.cancelable) e.preventDefault();
+              if (lightboxImg) lightboxImg.style.transform = 'translate3d(' + (d * 0.6) + 'px, 0, 0)';
+            }
+          }, { passive: false });
+          lightboxImgWrap.addEventListener('touchend', function() {
+            if (!lbIsDragging) return;
+            lbIsDragging = false;
+            var d = lbCurrentX - lbStartX;
+            if (lightboxImg) lightboxImg.style.transform = 'translate3d(0, 0, 0)';
+            if (d < -50) {
+              renderLightbox(lightboxCurrentIndex + 1);
+              if (window.SoundKit && SoundKit.flip) SoundKit.flip();
+            } else if (d > 50) {
+              renderLightbox(lightboxCurrentIndex - 1);
+              if (window.SoundKit && SoundKit.flip) SoundKit.flip();
+            }
+          }, { passive: true });
+        }
+
+        // Tap/Click on top card opens Lightbox (only if not swiping/dragging)
+        cards.forEach(function(c) {
+          c.addEventListener('click', function(e) {
+            if (hasMovedSignificantly) {
+              e.preventDefault();
+              return;
+            }
+            var visible = getVisibleCards();
+            var top = visible[currentIndex];
+            if (c !== top) return;
+            openLightbox(currentIndex);
           });
         });
 
-        if (lightboxClose && lightbox) {
-          lightboxClose.addEventListener('click', function() {
-            lightbox.close();
-            isPaused = false;
-          });
-        }
+        // Keyboard navigation for showroom and lightbox
+        window.addEventListener('keydown', function(e) {
+          if (lightboxOpen) {
+            if (e.key === 'ArrowRight') {
+              renderLightbox(lightboxCurrentIndex + 1);
+              if (window.SoundKit && SoundKit.flip) SoundKit.flip();
+            } else if (e.key === 'ArrowLeft') {
+              renderLightbox(lightboxCurrentIndex - 1);
+              if (window.SoundKit && SoundKit.flip) SoundKit.flip();
+            } else if (e.key === 'Escape') {
+              closeLightbox();
+            }
+          }
+        });
 
         updateStack();
       })();
