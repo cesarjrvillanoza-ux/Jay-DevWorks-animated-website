@@ -1126,6 +1126,73 @@
         color: #fff;
       }
 
+      .showroom-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+      }
+
+      .auto-swipe-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.3rem 0.8rem;
+        border-radius: 9999px;
+        background: rgba(10, 25, 55, 0.75);
+        border: 1px solid rgba(102, 176, 255, 0.3);
+        color: #8bbfff;
+        font-family: var(--font-code);
+        font-size: 0.76rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .auto-swipe-pill:hover {
+        background: rgba(20, 50, 105, 0.9);
+        border-color: rgba(102, 176, 255, 0.65);
+        color: #fff;
+        box-shadow: 0 0 12px rgba(102, 176, 255, 0.25);
+      }
+
+      .auto-swipe-indicator {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #00e5a3;
+        box-shadow: 0 0 8px #00e5a3;
+        animation: autoSwipePulse 2s infinite ease-in-out;
+      }
+
+      .auto-swipe-pill.paused .auto-swipe-indicator {
+        background: #f59e0b;
+        box-shadow: 0 0 6px #f59e0b;
+        animation: none;
+      }
+
+      @keyframes autoSwipePulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.35); opacity: 0.75; }
+      }
+
+      .auto-swipe-progress-track {
+        width: 100%;
+        max-width: 900px;
+        height: 3px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 2px;
+        margin: 0 auto 0.9rem auto;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .auto-swipe-progress-bar {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #3b82f6, #00e5a3);
+        border-radius: 2px;
+        transition: width 0.08s linear;
+      }
+
       .showroom-counter {
         font-family: var(--font-code);
         font-size: 0.9rem;
@@ -2183,7 +2250,18 @@
                 <button class="filter-btn" data-filter="webapp">Web apps</button>
                 <button class="filter-btn" data-filter="store">Online stores</button>
               </div>
-              <div class="showroom-counter" id="showroom-counter">1 / 6</div>
+              <div class="showroom-actions">
+                <button class="auto-swipe-pill" id="auto-swipe-toggle" aria-label="Toggle auto swipe" title="Toggle Auto-Swipe">
+                  <span class="auto-swipe-indicator"></span>
+                  <span class="auto-swipe-text" id="auto-swipe-text">Auto Swipe</span>
+                </button>
+                <div class="showroom-counter" id="showroom-counter">1 / 6</div>
+              </div>
+            </div>
+
+            <!-- Auto-swipe progress indicator -->
+            <div class="auto-swipe-progress-track" aria-hidden="true" title="Auto-swipe progress">
+              <div class="auto-swipe-progress-bar" id="auto-swipe-progress"></div>
             </div>
 
             <!-- Card Stack -->
@@ -4257,11 +4335,26 @@
         var prevBtn = document.getElementById('stack-prev-btn');
         var nextBtn = document.getElementById('stack-next-btn');
         var filterBtns = document.querySelectorAll('.filter-btn');
+        var autoSwipeToggle = document.getElementById('auto-swipe-toggle');
+        var autoSwipeText = document.getElementById('auto-swipe-text');
+        var progressBar = document.getElementById('auto-swipe-progress');
+        var showroomSection = document.getElementById('showroom') || container.closest('section');
 
         var currentIndex = 0;
-        var autoAdvanceTimer = null;
-        var isPaused = false;
         var currentFilter = 'all';
+        var autoSwipeEnabled = true;
+        var isPaused = false;
+        var isDragging = false;
+        var isAnimating = false;
+        var isInView = true;
+        var lightboxOpen = false;
+
+        // Auto-swipe timing (in ms)
+        var AUTO_SWIPE_INTERVAL = 3800;
+        var lastTickTime = performance.now();
+        var progressElapsed = 0;
+        var hoverResumeTimer = null;
+        var rafId = null;
 
         function getVisibleCards() {
           return cards.filter(function(card) {
@@ -4270,7 +4363,7 @@
           });
         }
 
-        function updateStack() {
+        function updateStack(skipTransition) {
           var visible = getVisibleCards();
           if (visible.length === 0) return;
           if (currentIndex >= visible.length) currentIndex = 0;
@@ -4278,7 +4371,11 @@
 
           cards.forEach(function(c) {
             c.style.display = 'none';
-            c.style.transition = 'transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.35s ease';
+            if (skipTransition) {
+              c.style.transition = 'none';
+            } else {
+              c.style.transition = 'transform 0.38s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.38s ease';
+            }
           });
 
           visible.forEach(function(card, idx) {
@@ -4313,66 +4410,197 @@
           }
         }
 
-        function nextCard(direction) {
+        function nextCard(direction, isAuto) {
           var visible = getVisibleCards();
-          if (visible.length <= 1) return;
+          if (visible.length <= 1 || isAnimating) return;
+          isAnimating = true;
+
           var top = visible[currentIndex];
+          var nextUnder = visible[(currentIndex + 1) % visible.length];
+          var thirdUnder = visible.length > 2 ? visible[(currentIndex + 2) % visible.length] : null;
+          var fourthUnder = visible.length > 3 ? visible[(currentIndex + 3) % visible.length] : null;
           var dir = (direction === 'left' || direction === undefined) ? -1 : 1;
+
+          // Animate top card off screen
           if (top) {
-            top.style.transition = 'transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.28s ease';
-            var exitX = dir < 0 ? -420 : 420;
-            var exitRot = dir < 0 ? -18 : 18;
-            top.style.transform = 'translate3d(' + exitX + 'px, -20px, 0) rotate(' + exitRot + 'deg)';
+            top.style.transition = 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.38s ease';
+            var exitX = dir < 0 ? -440 : 440;
+            var exitRot = dir < 0 ? -16 : 16;
+            top.style.transform = 'translate3d(' + exitX + 'px, -15px, 0) rotate(' + exitRot + 'deg)';
             top.style.opacity = '0';
           }
+
+          // Smoothly animate undercard into active position
+          if (nextUnder) {
+            nextUnder.style.transition = 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.38s ease';
+            nextUnder.style.transform = 'translate3d(0, 0, 0) scale(1) rotate(0deg)';
+            nextUnder.style.opacity = '1';
+            nextUnder.style.zIndex = '10';
+          }
+
+          if (thirdUnder) {
+            thirdUnder.style.transition = 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.38s ease';
+            thirdUnder.style.transform = 'translate3d(14px, 14px, -30px) scale(0.96) rotate(1.5deg)';
+            thirdUnder.style.opacity = '0.75';
+            thirdUnder.style.zIndex = '9';
+          }
+
+          if (fourthUnder) {
+            fourthUnder.style.transition = 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.38s ease';
+            fourthUnder.style.transform = 'translate3d(28px, 28px, -60px) scale(0.92) rotate(3deg)';
+            fourthUnder.style.opacity = '0.5';
+            fourthUnder.style.zIndex = '8';
+          }
+
           if (window.SoundKit && SoundKit.flip) SoundKit.flip();
+
           setTimeout(function() {
             currentIndex = (currentIndex + 1) % visible.length;
             updateStack();
-          }, 240);
+            isAnimating = false;
+            resetProgress();
+          }, 360);
         }
 
         function prevCard(direction) {
           var visible = getVisibleCards();
-          if (visible.length <= 1) return;
+          if (visible.length <= 1 || isAnimating) return;
+          isAnimating = true;
+
           var top = visible[currentIndex];
           var dir = (direction === 'right' || direction === undefined) ? 1 : -1;
+
           if (top) {
-            top.style.transition = 'transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.28s ease';
-            var exitX = dir > 0 ? 420 : -420;
-            var exitRot = dir > 0 ? 18 : -18;
-            top.style.transform = 'translate3d(' + exitX + 'px, -20px, 0) rotate(' + exitRot + 'deg)';
+            top.style.transition = 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.38s ease';
+            var exitX = dir > 0 ? 440 : -440;
+            var exitRot = dir > 0 ? 16 : -16;
+            top.style.transform = 'translate3d(' + exitX + 'px, -15px, 0) rotate(' + exitRot + 'deg)';
             top.style.opacity = '0';
           }
+
           if (window.SoundKit && SoundKit.flip) SoundKit.flip();
+
           setTimeout(function() {
             currentIndex = (currentIndex - 1 + visible.length) % visible.length;
             updateStack();
-          }, 240);
+            isAnimating = false;
+            resetProgress();
+          }, 360);
         }
 
-        if (nextBtn) nextBtn.addEventListener('click', function() { nextCard('left'); resetTimer(); });
-        if (prevBtn) prevBtn.addEventListener('click', function() { prevCard('right'); resetTimer(); });
-
-        function resetTimer() {
-          clearInterval(autoAdvanceTimer);
-          if (typeof PREFERS_REDUCED_MOTION === 'undefined' || !PREFERS_REDUCED_MOTION) {
-            autoAdvanceTimer = setInterval(function() {
-              if (!isPaused && document.visibilityState === 'visible' && !lightboxOpen) {
-                nextCard('left');
-              }
-            }, 3800);
+        function resetProgress() {
+          progressElapsed = 0;
+          lastTickTime = performance.now();
+          if (progressBar) {
+            progressBar.style.width = '0%';
           }
         }
-        resetTimer();
 
-        container.addEventListener('mouseenter', function() { isPaused = true; });
-        container.addEventListener('mouseleave', function() { if (!isDragging) isPaused = false; });
+        function setAutoSwipeState(enabled) {
+          autoSwipeEnabled = enabled;
+          if (autoSwipeToggle) {
+            if (autoSwipeEnabled) {
+              autoSwipeToggle.classList.remove('paused');
+              if (autoSwipeText) autoSwipeText.textContent = 'Auto Swipe';
+            } else {
+              autoSwipeToggle.classList.add('paused');
+              if (autoSwipeText) autoSwipeText.textContent = 'Paused';
+              if (progressBar) progressBar.style.width = '0%';
+            }
+          }
+        }
+
+        if (autoSwipeToggle) {
+          autoSwipeToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            setAutoSwipeState(!autoSwipeEnabled);
+            if (window.SoundKit && SoundKit.click) SoundKit.click();
+            resetProgress();
+          });
+        }
+
+        // Auto-Swipe RAF loop
+        function autoSwipeTick(now) {
+          var delta = now - lastTickTime;
+          lastTickTime = now;
+
+          var canAutoSwipe = autoSwipeEnabled &&
+                             !isPaused &&
+                             !isDragging &&
+                             !isAnimating &&
+                             isInView &&
+                             !lightboxOpen &&
+                             (document.visibilityState === 'visible') &&
+                             (typeof PREFERS_REDUCED_MOTION === 'undefined' || !PREFERS_REDUCED_MOTION);
+
+          if (canAutoSwipe) {
+            progressElapsed += delta;
+            var pct = Math.min(100, (progressElapsed / AUTO_SWIPE_INTERVAL) * 100);
+            if (progressBar) {
+              progressBar.style.width = pct + '%';
+            }
+            if (progressElapsed >= AUTO_SWIPE_INTERVAL) {
+              resetProgress();
+              nextCard('left', true);
+            }
+          } else {
+            // Keep progress bar in current position or slightly paused
+          }
+
+          rafId = requestAnimationFrame(autoSwipeTick);
+        }
+        rafId = requestAnimationFrame(autoSwipeTick);
+
+        // Pause on user hover, but resume after idle or mouseleave
+        container.addEventListener('mouseenter', function() {
+          isPaused = true;
+          clearTimeout(hoverResumeTimer);
+          // Resume auto-swipe after 3.2s even if cursor rests inside container
+          hoverResumeTimer = setTimeout(function() {
+            if (!isDragging && !lightboxOpen) {
+              isPaused = false;
+              resetProgress();
+            }
+          }, 3200);
+        });
+
+        container.addEventListener('mouseleave', function() {
+          clearTimeout(hoverResumeTimer);
+          if (!isDragging && !lightboxOpen) {
+            isPaused = false;
+            resetProgress();
+          }
+        });
+
+        // Intersection observer: only auto-swipe when showroom is on screen
+        if ('IntersectionObserver' in window && showroomSection) {
+          var observer = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+              isInView = entry.isIntersecting;
+              if (isInView) {
+                resetProgress();
+              }
+            });
+          }, { threshold: 0.15 });
+          observer.observe(showroomSection);
+        }
+
+        if (nextBtn) {
+          nextBtn.addEventListener('click', function() {
+            nextCard('left');
+            resetProgress();
+          });
+        }
+        if (prevBtn) {
+          prevBtn.addEventListener('click', function() {
+            prevCard('right');
+            resetProgress();
+          });
+        }
 
         // Swipe & Drag Gesture Handler
         var startX = 0, startY = 0, currentX = 0, currentY = 0;
         var startTime = 0;
-        var isDragging = false;
         var isHorizontalSwipe = false;
         var activePointerId = null;
         var topCard = null;
@@ -4386,12 +4614,13 @@
 
         function handleDragStart(clientX, clientY, pointerId) {
           var visible = getVisibleCards();
-          if (visible.length === 0) return;
+          if (visible.length === 0 || isAnimating) return;
           topCard = visible[currentIndex];
           nextUnderCard = visible.length > 1 ? visible[(currentIndex + 1) % visible.length] : null;
           if (!topCard) return;
 
           isDragging = true;
+          isPaused = true;
           isHorizontalSwipe = false;
           hasMovedSignificantly = false;
           activePointerId = pointerId !== undefined ? pointerId : null;
@@ -4400,7 +4629,7 @@
           currentX = clientX;
           currentY = clientY;
           startTime = Date.now();
-          isPaused = true;
+          resetProgress();
 
           topCard.style.transition = 'none';
           if (nextUnderCard) nextUnderCard.style.transition = 'none';
@@ -4421,9 +4650,10 @@
             if (Math.abs(deltaX) > 7 && Math.abs(deltaX) > Math.abs(deltaY)) {
               isHorizontalSwipe = true;
               hasMovedSignificantly = true;
-            } else if (Math.abs(deltaY) > 12 && Math.abs(deltaY) > Math.abs(deltaX)) {
-              // User is scrolling page vertically - release card
+            } else if (Math.abs(deltaY) > 14 && Math.abs(deltaY) > Math.abs(deltaX)) {
+              // User is scrolling page vertically - cancel card drag
               isDragging = false;
+              isPaused = false;
               topCard.style.transition = 'transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.35s ease';
               topCard.style.transform = 'translate3d(0, 0, 0) scale(1) rotate(0deg)';
               topCard.style.opacity = '1';
@@ -4435,7 +4665,7 @@
               if (activePointerId !== null && container.releasePointerCapture) {
                 try { container.releasePointerCapture(activePointerId); } catch (err) {}
               }
-              isPaused = false;
+              resetProgress();
               return;
             }
           }
@@ -4444,12 +4674,12 @@
             if (e && e.cancelable) e.preventDefault();
             hasMovedSignificantly = true;
             var rot = Math.max(-18, Math.min(18, deltaX * 0.04));
-            topCard.style.transform = 'translate3d(' + deltaX + 'px, ' + (deltaX * 0.04) + 'px, 0) rotate(' + rot + 'deg)';
-            var opacity = Math.max(0.4, 1 - Math.abs(deltaX) / 600);
+            topCard.style.transform = 'translate3d(' + deltaX + 'px, ' + (deltaX * 0.035) + 'px, 0) rotate(' + rot + 'deg)';
+            var opacity = Math.max(0.35, 1 - Math.abs(deltaX) / 600);
             topCard.style.opacity = opacity.toString();
 
             if (nextUnderCard) {
-              var progress = Math.min(1, Math.abs(deltaX) / 200);
+              var progress = Math.min(1, Math.abs(deltaX) / 220);
               var peekX = 14 * (1 - progress);
               var peekY = 14 * (1 - progress);
               var peekZ = -30 * (1 - progress);
@@ -4466,7 +4696,6 @@
           if (!isDragging) return;
           isDragging = false;
           isPaused = false;
-          resetTimer();
 
           if (activePointerId !== null && container.releasePointerCapture) {
             try { container.releasePointerCapture(activePointerId); } catch (err) {}
@@ -4475,20 +4704,16 @@
 
           if (!topCard) {
             updateStack();
+            resetProgress();
             return;
-          }
-
-          topCard.style.transition = 'transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.32s ease';
-          if (nextUnderCard) {
-            nextUnderCard.style.transition = 'transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.32s ease';
           }
 
           var deltaX = currentX - startX;
           var deltaTime = Math.max(1, Date.now() - startTime);
           var velocity = Math.abs(deltaX) / deltaTime; // px/ms
 
-          // Swipe threshold: 55px distance or 25px fast flick
-          var isSwipe = (Math.abs(deltaX) > 55) || (Math.abs(deltaX) > 25 && velocity > 0.35);
+          // Swipe threshold: 50px distance or 20px quick flick
+          var isSwipe = (Math.abs(deltaX) > 50) || (Math.abs(deltaX) > 20 && velocity > 0.3);
 
           if (isSwipe && isHorizontalSwipe) {
             if (deltaX < 0) {
@@ -4499,17 +4724,20 @@
               prevCard('right');
             }
           } else {
-            // Snap back
+            // Snap back smoothly
+            topCard.style.transition = 'transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.32s ease';
             topCard.style.transform = 'translate3d(0, 0, 0) scale(1) rotate(0deg)';
             topCard.style.opacity = '1';
             if (nextUnderCard) {
+              nextUnderCard.style.transition = 'transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.32s ease';
               nextUnderCard.style.transform = 'translate3d(14px, 14px, -30px) scale(0.96) rotate(1.5deg)';
               nextUnderCard.style.opacity = '0.75';
             }
+            resetProgress();
           }
         }
 
-        // Pointer Events
+        // Pointer Events for Drag / Swipe
         container.addEventListener('pointerdown', function(e) {
           if (e.pointerType === 'mouse' && e.button !== 0) return;
           handleDragStart(e.clientX, e.clientY, e.pointerId);
@@ -4530,7 +4758,7 @@
           handleDragEnd();
         });
 
-        // Touch event fallbacks for complete mobile cross-compatibility
+        // Touch event backups for mobile cross-compatibility
         container.addEventListener('touchstart', function(e) {
           if (e.touches.length === 1) {
             var t = e.touches[0];
@@ -4562,7 +4790,7 @@
             currentIndex = 0;
             if (window.SoundKit && SoundKit.click) SoundKit.click();
             updateStack();
-            resetTimer();
+            resetProgress();
           });
         });
 
@@ -4576,7 +4804,6 @@
         var lightboxCounter = document.getElementById('lightbox-counter');
         var lightboxImgWrap = document.getElementById('lightbox-img-wrap');
         var lightboxCurrentIndex = 0;
-        var lightboxOpen = false;
 
         function renderLightbox(idx) {
           var visible = getVisibleCards();
@@ -4629,7 +4856,7 @@
           } catch (err) {
             lightbox.removeAttribute('open');
           }
-          resetTimer();
+          resetProgress();
         }
 
         if (lightboxClose) lightboxClose.addEventListener('click', closeLightbox);
@@ -4734,7 +4961,9 @@
           }
         });
 
+        // Initial setup
         updateStack();
+        resetProgress();
       })();
 
       /* --- Section 3 & Security Master Prompt: INQUIRY FORM & RESEND --- */
